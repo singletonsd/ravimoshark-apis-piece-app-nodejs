@@ -127,6 +127,15 @@ chmod +x scripts/swagger_binaries_downloader.sh scripts/swagger_generate_nodejs.
 ./scripts/swagger_generate_nodejs.sh
 ```
 
+## GENERATE DOCKER IMAGES LOCALLY
+
+You can create docker images locally by executing the following script:
+
+```bash
+npm run docker-download #only first time
+npm run docker-generate #once download was executed.
+```
+
 ## TODO
 
 - [X] Setup docker image.

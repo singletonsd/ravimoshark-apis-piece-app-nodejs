@@ -1,0 +1,21 @@
+[
+  {
+    "name": "default",
+    "type": "mssql",
+    "host": "d05qizmaog.database.windows.net",
+    "port": 1433,
+    "database": "db_taches_new",
+    "schema": "dbo",
+    "synchronize": false,
+    "loggerLevel": "debug",
+    "debug": "true",
+    "options": {
+      "encrypt": true
+    },
+    "cli": {
+       "entitiesDir": "src/databases/entities",
+       "migrationsDir": "src/databases/migrations",
+       "subscribersDir": "src/databases/subscribers"
+    }
+  }
+]

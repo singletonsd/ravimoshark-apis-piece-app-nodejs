@@ -36,7 +36,6 @@ COPY tsconfig.json .
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
-COPY scripts scripts/
 COPY assets/environment/.docker.env ./.env
 
 # Show current folder structure in logs

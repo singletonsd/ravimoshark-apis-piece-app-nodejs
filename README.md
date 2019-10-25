@@ -108,6 +108,25 @@ You can provide your own *ormconfig.json* file to connect with a database. Use t
 - Default branch when pull is DEVELOP.
 - Master branch is protected and it is not possible to push. Create a merge request instead.
 
+### GENERATE SERVER
+
+Generates an nodejs server of the provided spec. It contains the following options inside a file called .env.swagger :
+
+```bash
+SWAGGER_API_SPEC=#location of spec, it can be local or url
+SWAGGER_REPO=#repository name
+```
+
+It can be downloaded by:
+
+```bash
+mkdir -p scripts && \
+curl -o scripts/swagger_binaries_downloader.sh -L https://singletonsd.gitlab.io/scripts/swagger/latest/swagger_binaries_downloader.sh && \
+curl -o scripts/swagger_generate_angular.sh -L https://singletonsd.gitlab.io/scripts/swagger/latest/swagger_generate_nodejs.sh && \
+chmod +x scripts/swagger_binaries_downloader.sh scripts/swagger_generate_nodejs.sh && \
+./scripts/swagger_generate_nodejs.sh
+```
+
 ## TODO
 
 - [X] Setup docker image.

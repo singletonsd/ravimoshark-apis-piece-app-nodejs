@@ -1,0 +1,11 @@
+/.vscode/
+/.swagger-codegen/
+.gitlab-ci.yml
+.swagger-codegen-ignore
+README.md
+/data/
+.env
+ecosystem.config.js
+/keys/
+/node_modules/
+/binaries/

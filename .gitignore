@@ -1,0 +1,10 @@
+/node_modules/
+.env
+/keys/
+app_tokens.json
+/data/
+/binaries/
+/build/
+/dist/
+generated
+scripts

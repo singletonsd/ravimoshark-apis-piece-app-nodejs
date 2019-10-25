@@ -11,6 +11,7 @@ variables:
   TEST_STATIC_ALL: "true"
   ORIGINAL_REPOSITORY: "ravimosharksas/apis/piece/app-nodejs"
   NODE_COMMON_INSTALL_BEFORE: "python make gcc g++"
+  NODE_COMMON_DOCKER_PACKAGE: "true"
 
 stages:
   - install
@@ -18,30 +19,3 @@ stages:
   - build
   - test_dynamic
   - package
-
-package-image:
-  image: docker:latest
-  stage: package
-  services:
-    - docker:dind
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILD_BASE_NAME: ${CI_REGISTRY_IMAGE}
-  before_script:
-    - echo "${REGISTRY_GITLAB_PASS}" | docker login registry.gitlab.com -u ${REGISTRY_GITLAB_USER} --password-stdin
-    - apk add --no-cache bash curl gawk git sed util-linux pciutils usbutils coreutils binutils findutils grep
-  script:
-    - if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then
-        export DOCKER_BUILD_TAG=latest;
-      else
-        export DOCKER_BUILD_TAG=${CI_COMMIT_REF_NAME};
-      fi
-    - curl -o docker_build_multiple_images.sh -L https://singletonsd.gitlab.io/scripts/docker/latest/docker_build_multiple_images.sh
-    - chmod +x docker_build_multiple_images.sh
-    - ./docker_build_multiple_images.sh -c=${CI_COMMIT_SHA} -p
-  only:
-    changes:
-      - config/**/*
-      - ./*.json
-      - src/**/*
-      - .gitlab-ci.yml

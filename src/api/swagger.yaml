@@ -1,491 +1,235 @@
 openapi: 3.0.0
 info:
+  version: 1.0.0
   title: Ravimoshark Piece API
+  termsOfService: 'https://ravimoshark.com/terms/'
+  contact:
+    email: dev@ravimoshark.com
+    url: 'http://ravimoshark.com/contact'
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   description: |
     This is an API to interact with Ravimoshark piece database.
     # Introduction
-    This API allow to create, modify and delete pieces, products and sheets.
+    This API allow to create, modify and delete pieces and products (cards, details and key points).
     # User Authentication
     This API does not contain any kind of user validation but It request to have a valid authentication user to interact with it. For more information about user Authentication, please refer to [Ravimoshark User Authentication](https://ravimoshark.com/back/apis/auth/latest).
-  termsOfService: https://ravimoshark.com/terms/
-  contact:
-    url: http://ravimoshark.com/contact
-    email: dev@ravimoshark.com
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.0
 externalDocs:
   description: Find out how to interact with Ravimoshark's APIs.
-  url: https://ravimoshark.com/back/apis/auth/latest
-servers:
-- url: http://localhost:8003
-- url: https://ravimoshark.com/back/apis/piece/v1
-- url: https://ravimoshark.com/back/apis/piece/latest
+  url: 'https://ravimoshark.com/back/apis/auth/latest'
 tags:
-- name: Products
-  description: Operations about products.
-- name: Categories
-  description: Operations about categories.
-- name: Pieces
-  description: Operations about pieces.
+  - name: Products
+    description: Operations about products.
+  - name: Categories
+    description: Operations about categories.
+  - name: Pieces
+    description: Operations about pieces.
+servers:
+  - url: 'http://localhost:8003'
+  - url: 'https://ravimoshark.com/back/apis/piece/v1'
+  - url: 'https://ravimoshark.com/back/apis/piece/latest'
 paths:
   /categories:
     get:
       tags:
-      - Categories
+        - Categories
       summary: Get all categories.
       description: Get all categories.
       operationId: getCategories
       parameters:
-      - name: skip
-        in: query
-        description: number of item to skip
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: limit
-        in: query
-        description: max records to return
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 10
-      - name: orderBy
-        in: query
-        description: order by property.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: filterBy
-        in: query
-        description: filter data.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: deleted
-        in: query
-        description: Get all, deleted, not deleted data. Default not deleted.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Deleted'
-      - name: metadata
-        in: query
-        description: If metadata is needed (for pagination controls)
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: boolean
-          default: false
-      - name: category
-        in: query
-        description: category of desired product.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Categories'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/OrderBy'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Deleted'
+        - $ref: '#/components/parameters/Metadata'
+        - $ref: '#/components/parameters/Category'
       responses:
-        200:
+        '200':
           description: Request OK.
+          headers:
+            - $ref: '#/components/headers/Limit'
+            - $ref: '#/components/headers/Remaining'
+            - $ref: '#/components/headers/Reset'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200'
-        204:
-          description: Response is empty.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        400:
-          description: Some parameters are missing or badly entered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                x-content-type: application/json
-        404:
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        405:
-          description: Illegal input for operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
+                type: object
+                properties:
+                  metadata:
+                    $ref: '#/components/schemas/Metadata'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Categories'
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
       x-swagger-router-controller: Categories
   /pieces:
     get:
       tags:
-      - Pieces
+        - Pieces
       summary: Get all pieces.
       description: Get all pieces.
       operationId: getPieces
       parameters:
-      - name: skip
-        in: query
-        description: number of item to skip
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: limit
-        in: query
-        description: max records to return
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 10
-      - name: orderBy
-        in: query
-        description: order by property.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: filterBy
-        in: query
-        description: filter data.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: deleted
-        in: query
-        description: Get all, deleted, not deleted data. Default not deleted.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Deleted'
-      - name: metadata
-        in: query
-        description: If metadata is needed (for pagination controls)
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: boolean
-          default: false
-      - name: category
-        in: query
-        description: category of desired product.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Categories'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/OrderBy'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Deleted'
+        - $ref: '#/components/parameters/Metadata'
+        - $ref: '#/components/parameters/Category'
       responses:
-        200:
+        '200':
           description: Request OK.
+          headers:
+            - $ref: '#/components/headers/Limit'
+            - $ref: '#/components/headers/Remaining'
+            - $ref: '#/components/headers/Reset'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
-        204:
-          description: Response is empty.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        400:
-          description: Some parameters are missing or badly entered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                x-content-type: application/json
-        404:
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        405:
-          description: Illegal input for operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
+                type: object
+                properties:
+                  metadata:
+                    $ref: '#/components/schemas/Metadata'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pieces'
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
       x-swagger-router-controller: Pieces
-  /pieces/{refArticle}:
+  '/pieces/{refArticle}':
     get:
       tags:
-      - Pieces
+        - Pieces
       summary: Get one piece.
       description: Get one piece.
       operationId: getPieceById
       parameters:
-      - name: refArticle
-        in: path
-        description: reference of piece to delete or search
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-          format: int64
-      - name: deleted
-        in: query
-        description: Get all, deleted, not deleted data. Default not deleted.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Deleted'
+        - $ref: '#/components/parameters/RefArticle'
+        - $ref: '#/components/parameters/Deleted'
       responses:
-        200:
+        '200':
           description: Request OK.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pieces'
-        400:
-          description: Some parameters are missing or badly entered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                x-content-type: application/json
-        404:
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        405:
-          description: Illegal input for operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
       x-swagger-router-controller: Pieces
   /products:
     get:
       tags:
-      - Products
+        - Products
       summary: Get all products.
       description: Get all products.
       operationId: getProducts
       parameters:
-      - name: skip
-        in: query
-        description: number of item to skip
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: limit
-        in: query
-        description: max records to return
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-          format: int32
-          default: 10
-      - name: orderBy
-        in: query
-        description: order by property.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: filterBy
-        in: query
-        description: filter data.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: deleted
-        in: query
-        description: Get all, deleted, not deleted data. Default not deleted.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Deleted'
-      - name: metadata
-        in: query
-        description: If metadata is needed (for pagination controls)
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: boolean
-          default: false
-      - name: category
-        in: query
-        description: category of desired product.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Categories'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/OrderBy'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Deleted'
+        - $ref: '#/components/parameters/Metadata'
+        - $ref: '#/components/parameters/Category'
       responses:
-        200:
+        '200':
           description: Request OK.
+          headers:
+            - $ref: '#/components/headers/Limit'
+            - $ref: '#/components/headers/Remaining'
+            - $ref: '#/components/headers/Reset'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
-        204:
-          description: Response is empty.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        400:
-          description: Some parameters are missing or badly entered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                x-content-type: application/json
-        404:
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        405:
-          description: Illegal input for operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
+                type: object
+                properties:
+                  metadata:
+                    $ref: '#/components/schemas/Metadata'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Products'
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
       x-swagger-router-controller: Products
-  /products/{refArticle}:
+  '/products/{refArticle}':
     get:
       tags:
-      - Products
+        - Products
       summary: Get one product.
       description: Get one product.
       operationId: getProductById
       parameters:
-      - name: refArticle
-        in: path
-        description: reference of piece to delete or search
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-          format: int64
-      - name: deleted
-        in: query
-        description: Get all, deleted, not deleted data. Default not deleted.
-        required: false
-        style: form
-        explode: true
-        schema:
-          $ref: '#/components/schemas/Deleted'
+        - $ref: '#/components/parameters/RefArticle'
+        - $ref: '#/components/parameters/Deleted'
       responses:
-        200:
+        '200':
           description: Request OK.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Products'
-        400:
-          description: Some parameters are missing or badly entered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                x-content-type: application/json
-        404:
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
-        405:
-          description: Illegal input for operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomError'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
       x-swagger-router-controller: Products
 components:
   schemas:
     Categories:
       type: string
-      enum:
-      - ALL
-      - DETERGENTS
-      - DISHWASHER
-      - MACHINES
-      - REPAIRED_PIECES
-      - WATER_TREATMENT
       default: ALL
+      enum:
+        - ALL
+        - DETERGENTS
+        - DISHWASHER
+        - MACHINES
+        - REPAIRED_PIECES
+        - WATER_TREATMENT
     CustomError:
-      required:
-      - message
       type: object
+      required:
+        - message
       properties:
         code:
           type: string
@@ -495,18 +239,18 @@ components:
           type: string
     Deleted:
       type: string
-      enum:
-      - ACTIVE
-      - DELETED
-      - ALL
       default: ACTIVE
+      enum:
+        - ACTIVE
+        - DELETED
+        - ALL
     IdInteger:
+      description: Object's Id.
       type: object
       properties:
         id:
           type: integer
           format: int64
-      description: Object's Id.
     Metadata:
       type: object
       properties:
@@ -525,13 +269,8 @@ components:
         last:
           type: integer
           format: int64
-      example:
-        next: 5
-        last: 5
-        prev: 6
-        self: 1
-        first: 0
     PieceCards:
+      description: Pieces card information.
       type: object
       properties:
         id:
@@ -543,9 +282,11 @@ components:
           type: string
         description:
           type: string
-        category:
+        categoryId:
           type: string
-        imagePath:
+        category:
+          $ref: '#/components/schemas/PieceCategories'
+        imageName:
           type: string
         createdAt:
           type: string
@@ -555,22 +296,15 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Pieces card information.
-      example:
-        createdAt: 2000-01-23
-        deleted: true
-        imagePath: imagePath
-        description: description
-        id: 0
-        category: category
-        refArticle: refArticle
-        updatedAt: 2000-01-23
     PieceCategories:
+      description: Pieces categories information.
       type: object
       properties:
         name:
           type: string
-        imagePath:
+        imageName:
+          type: string
+        imageExtension:
           type: string
         createdAt:
           type: string
@@ -580,8 +314,8 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Pieces categories information.
     PieceDetails:
+      description: Pieces detail information.
       type: object
       properties:
         id:
@@ -608,18 +342,8 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Pieces detail information.
-      example:
-        createdAt: 2000-01-23
-        unit: unit
-        deleted: true
-        line: 1
-        id: 6
-        title: title
-        refArticle: refArticle
-        content: content
-        updatedAt: 2000-01-23
     PieceKeyPoints:
+      description: Pieces Key Point information.
       type: object
       properties:
         id:
@@ -642,16 +366,8 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Pieces Key Point information.
-      example:
-        createdAt: 2000-01-23
-        deleted: true
-        line: 5
-        id: 5
-        refArticle: refArticle
-        content: content
-        updatedAt: 2000-01-23
     Pieces:
+      description: Pieces information.
       type: object
       properties:
         refArticle:
@@ -686,22 +402,8 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Pieces information.
-      example:
-        priceLastPurchase: 1.4658129
-        weight: 5.962134
-        packaging: packaging
-        saleUnit: 6.0274563
-        createdAt: 2000-01-23
-        deleted: true
-        name: name
-        detergentType: detergentType
-        state: state
-        priceSale: 0.8008282
-        family: family
-        refArticle: refArticle
-        updatedAt: 2000-01-23
     Products:
+      description: Products information.
       type: object
       properties:
         piece:
@@ -726,303 +428,38 @@ components:
           format: date
         deleted:
           type: boolean
-      description: Products information.
-      example:
-        createdAt: 2000-01-23
-        deleted: true
-        piece:
-          priceLastPurchase: 1.4658129
-          weight: 5.962134
-          packaging: packaging
-          saleUnit: 6.0274563
-          createdAt: 2000-01-23
-          deleted: true
-          name: name
-          detergentType: detergentType
-          state: state
-          priceSale: 0.8008282
-          family: family
-          refArticle: refArticle
-          updatedAt: 2000-01-23
-        pieceKeyPoints:
-        - createdAt: 2000-01-23
-          deleted: true
-          line: 5
-          id: 5
-          refArticle: refArticle
-          content: content
-          updatedAt: 2000-01-23
-        - createdAt: 2000-01-23
-          deleted: true
-          line: 5
-          id: 5
-          refArticle: refArticle
-          content: content
-          updatedAt: 2000-01-23
-        pieceDetails:
-        - createdAt: 2000-01-23
-          unit: unit
-          deleted: true
-          line: 1
-          id: 6
-          title: title
-          refArticle: refArticle
-          content: content
-          updatedAt: 2000-01-23
-        - createdAt: 2000-01-23
-          unit: unit
-          deleted: true
-          line: 1
-          id: 6
-          title: title
-          refArticle: refArticle
-          content: content
-          updatedAt: 2000-01-23
-        refArticle: refArticle
-        card:
-          createdAt: 2000-01-23
-          deleted: true
-          imagePath: imagePath
-          description: description
-          id: 0
-          category: category
-          refArticle: refArticle
-          updatedAt: 2000-01-23
-        updatedAt: 2000-01-23
     RefArticle:
+      description: Piece's reference.
       type: object
       properties:
         refContract:
           type: string
-      description: Piece's reference.
-    inline_response_200:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Categories'
-      example:
-        metadata:
-          next: 5
-          last: 5
-          prev: 6
-          self: 1
-          first: 0
-        items:
-        - ALL
-        - ALL
-    inline_response_200_1:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Pieces'
-      example:
-        metadata:
-          next: 5
-          last: 5
-          prev: 6
-          self: 1
-          first: 0
-        items:
-        - priceLastPurchase: 1.4658129
-          weight: 5.962134
-          packaging: packaging
-          saleUnit: 6.0274563
-          createdAt: 2000-01-23
-          deleted: true
-          name: name
-          detergentType: detergentType
-          state: state
-          priceSale: 0.8008282
-          family: family
-          refArticle: refArticle
-          updatedAt: 2000-01-23
-        - priceLastPurchase: 1.4658129
-          weight: 5.962134
-          packaging: packaging
-          saleUnit: 6.0274563
-          createdAt: 2000-01-23
-          deleted: true
-          name: name
-          detergentType: detergentType
-          state: state
-          priceSale: 0.8008282
-          family: family
-          refArticle: refArticle
-          updatedAt: 2000-01-23
-    inline_response_200_2:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Products'
-      example:
-        metadata:
-          next: 5
-          last: 5
-          prev: 6
-          self: 1
-          first: 0
-        items:
-        - createdAt: 2000-01-23
-          deleted: true
-          piece:
-            priceLastPurchase: 1.4658129
-            weight: 5.962134
-            packaging: packaging
-            saleUnit: 6.0274563
-            createdAt: 2000-01-23
-            deleted: true
-            name: name
-            detergentType: detergentType
-            state: state
-            priceSale: 0.8008282
-            family: family
-            refArticle: refArticle
-            updatedAt: 2000-01-23
-          pieceKeyPoints:
-          - createdAt: 2000-01-23
-            deleted: true
-            line: 5
-            id: 5
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          - createdAt: 2000-01-23
-            deleted: true
-            line: 5
-            id: 5
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          pieceDetails:
-          - createdAt: 2000-01-23
-            unit: unit
-            deleted: true
-            line: 1
-            id: 6
-            title: title
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          - createdAt: 2000-01-23
-            unit: unit
-            deleted: true
-            line: 1
-            id: 6
-            title: title
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          refArticle: refArticle
-          card:
-            createdAt: 2000-01-23
-            deleted: true
-            imagePath: imagePath
-            description: description
-            id: 0
-            category: category
-            refArticle: refArticle
-            updatedAt: 2000-01-23
-          updatedAt: 2000-01-23
-        - createdAt: 2000-01-23
-          deleted: true
-          piece:
-            priceLastPurchase: 1.4658129
-            weight: 5.962134
-            packaging: packaging
-            saleUnit: 6.0274563
-            createdAt: 2000-01-23
-            deleted: true
-            name: name
-            detergentType: detergentType
-            state: state
-            priceSale: 0.8008282
-            family: family
-            refArticle: refArticle
-            updatedAt: 2000-01-23
-          pieceKeyPoints:
-          - createdAt: 2000-01-23
-            deleted: true
-            line: 5
-            id: 5
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          - createdAt: 2000-01-23
-            deleted: true
-            line: 5
-            id: 5
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          pieceDetails:
-          - createdAt: 2000-01-23
-            unit: unit
-            deleted: true
-            line: 1
-            id: 6
-            title: title
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          - createdAt: 2000-01-23
-            unit: unit
-            deleted: true
-            line: 1
-            id: 6
-            title: title
-            refArticle: refArticle
-            content: content
-            updatedAt: 2000-01-23
-          refArticle: refArticle
-          card:
-            createdAt: 2000-01-23
-            deleted: true
-            imagePath: imagePath
-            description: description
-            id: 0
-            category: category
-            refArticle: refArticle
-            updatedAt: 2000-01-23
-          updatedAt: 2000-01-23
   responses:
-    204:
+    '204':
       description: Response is empty.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomError'
-    400:
+    '400':
       description: Some parameters are missing or badly entered.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomError'
-    401:
+    '401':
       description: Unauthorized
       content:
         application/json:
           schema:
             type: string
-            x-content-type: application/json
-    404:
+    '404':
       description: Entity not found.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomError'
-    405:
+    '405':
       description: Illegal input for operation.
       content:
         application/json:
@@ -1031,97 +468,78 @@ components:
   parameters:
     Category:
       name: category
-      in: query
       description: category of desired product.
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         $ref: '#/components/schemas/Categories'
     Deleted:
       name: deleted
       in: query
-      description: Get all, deleted, not deleted data. Default not deleted.
+      description: 'Get all, deleted, not deleted data. Default not deleted.'
       required: false
-      style: form
-      explode: true
       schema:
         $ref: '#/components/schemas/Deleted'
+        default: ACTIVE
     Filter:
       name: filterBy
-      in: query
       description: filter data.
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: string
     Id:
       name: id
-      in: path
       description: id to delete or search
+      in: path
       required: true
-      style: simple
-      explode: false
       schema:
         type: integer
         format: int64
     Limit:
       name: limit
-      in: query
       description: max records to return
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: integer
         format: int32
         default: 10
     Metadata:
       name: metadata
-      in: query
       description: If metadata is needed (for pagination controls)
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: boolean
         default: false
     OrderBy:
       name: orderBy
-      in: query
       description: order by property.
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: string
     RefArticle:
       name: refArticle
-      in: path
       description: reference of piece to delete or search
+      in: path
       required: true
-      style: simple
-      explode: false
       schema:
         type: integer
         format: int64
     RefArticleQuery:
       name: refArticle
-      in: query
       description: RefArticle from a desired client
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: string
     Skip:
       name: skip
-      in: query
       description: number of item to skip
+      in: query
       required: false
-      style: form
-      explode: true
       schema:
         type: integer
         format: int32
@@ -1129,22 +547,16 @@ components:
   headers:
     Limit:
       description: The number of allowed requests in the current period
-      style: simple
-      explode: false
       schema:
         type: integer
         format: int64
     Remaining:
       description: The number of remaining requests in the current period
-      style: simple
-      explode: false
       schema:
         type: integer
         format: int64
     Reset:
       description: The number of seconds left in the current period
-      style: simple
-      explode: false
       schema:
         type: integer
         format: int64

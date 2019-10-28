@@ -40,14 +40,14 @@ export class Pieces {
         nullable: true,
         precision: 53
     })
-    public uniteVente?: number | null;
+    public saleUnit?: number | null;
 
     @Column("nvarchar", {
         length: 100,
         name: "IntituleFamille",
         nullable: true
     })
-    public saleUnit?: string | null;
+    public family?: string | null;
 
     @Column("float", {
         name: "DernierPrixAchat",

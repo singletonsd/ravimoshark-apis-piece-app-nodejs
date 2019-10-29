@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, RelationId } from "typeorm";
 import { PieceCategories } from "./PieceCategories";
-import { Pieces } from "./Pieces";
 import { PieceDetails } from "./PieceDetails";
 import { PiecesKeyPoints } from "./PieceKeyPoints";
+import { Pieces } from "./Pieces";
 
 @Entity("PiecesFiche")
 export class PieceCards {

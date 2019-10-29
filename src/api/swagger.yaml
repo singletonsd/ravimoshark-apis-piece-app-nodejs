@@ -74,6 +74,10 @@ paths:
         '405':
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Categories
+      security:
+        - main_auth:
+            - 'read:category'
+        - api_key: []
   /pieces:
     get:
       tags:
@@ -526,8 +530,7 @@ components:
       in: path
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
     RefArticleQuery:
       name: refArticle
       description: RefArticle from a desired client
@@ -560,3 +563,23 @@ components:
       schema:
         type: integer
         format: int64
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: api_key
+    basic_auth:
+      type: http
+      scheme: basic
+    main_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'http://localhost:9090.com/auth'
+          scopes:
+            'read:category': read category info.
+            'write:category': 'create, modify or remove category.'
+            'read:piece': read piece info.
+            'write:piece': 'create, modify or remove piece.'
+            'read:product': read product info.
+            'write:product': 'create, modify or remove product.'

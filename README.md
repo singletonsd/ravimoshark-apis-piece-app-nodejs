@@ -70,7 +70,14 @@ npm start
 
 ## API TOKENS
 
-<!-- TODO: tell how to connect with KeyClock. -->
+In order to secure this API, it must be connected with a KeyClock Server. To do that, you must declare the following environment variables:
+
+<!-- TODO: check environment variables of keyclock. -->
+```bash
+# KEYCLOAK CONFIGURATION
+KEYCLOAK_PUBLIC_KEY=
+KEYCLOAK_URL=
+```
 
 ## DATABASE CONNECTIONS
 

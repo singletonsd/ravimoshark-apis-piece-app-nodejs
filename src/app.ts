@@ -4,6 +4,7 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import express from "express";
 import * as helmet from "helmet";
+import { KeyCloakUtils } from "./utils/keycloak/KeyCloakUtils";
 import { LoggerUtility } from "./utils/LoggerUtility";
 import { SwaggerUtils } from "./utils/SwaggerUtils";
 import { TypeOrmUtils } from "./utils/TypeOrmUtils";
@@ -27,6 +28,7 @@ app.use(helmet.frameguard());
 
 TypeOrmUtils.init()
 .then(async () => {
+    KeyCloakUtils.init(app);
     SwaggerUtils.init(app);
 })
 .catch((error) => {

@@ -43,15 +43,14 @@ export class SwaggerUtils {
         // TODO: change the path of the documentation to URL of gitlab.
         const spec = fs.readFileSync(path.join(__dirname, "../../src/api/swagger.yaml"), "utf8");
         this.swaggerDoc = jsyaml.safeLoad(spec);
-
-        if (process.env.SWAGGER_HOST) {
-            this.swaggerDoc.host = process.env.SWAGGER_HOST;
-        }
-
+        const servers: Array<{ url: string}> = this.swaggerDoc.servers;
         if (process.env.SWAGGER_URL) {
             LoggerUtility.info("Found environment URL", process.env.SWAGGER_URL);
-            const servers: Array<{ url: string}> = this.swaggerDoc.servers;
             servers.unshift({ url: process.env.SWAGGER_URL });
+        }
+        if (process.env.APP_PORT) {
+            LoggerUtility.info("Found APP_PORT env", process.env.APP_PORT);
+            servers.unshift({ url: `http://localhost:${process.env.APP_PORT}` });
         }
     }
 

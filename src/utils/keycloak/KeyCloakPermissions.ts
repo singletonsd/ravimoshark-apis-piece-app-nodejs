@@ -1,5 +1,6 @@
 "use strict";
 
+import * as express from "express";
 import UrlPattern from "url-pattern";
 
 export class KeyCloakPermissions {
@@ -24,10 +25,9 @@ export class KeyCloakPermissions {
         return this;
     }
 
-    public findPermission(request) {
+    public findPermission(req: express.Request) {
         return this.permissions.find((permission) =>
-            request.method.toUpperCase() === permission.method && permission.url.match(request.originalUrl)
-        );
+            req.method.toUpperCase() === permission.method && permission.url.match(req.originalUrl));
     }
 
     public isNotProtectedUrl(request) {

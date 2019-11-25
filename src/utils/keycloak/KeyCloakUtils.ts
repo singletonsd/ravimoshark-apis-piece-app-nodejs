@@ -1,8 +1,8 @@
-import * as express from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
+import * as core from "express-serve-static-core";
 import session from "express-session";
 import * as fs from "fs";
 import jsyaml from "js-yaml";
-import KeyCloak from "keycloak-connect";
 import Keycloak from "keycloak-connect";
 import * as path from "path";
 import request from "request-promise";
@@ -12,69 +12,70 @@ import { SwaggerUtils } from "../SwaggerUtils";
 import { ResponsePayload } from "../writer";
 import { KeyCloakPermissions, Permissions } from "./KeyCloakPermissions";
 
+// TODO: get public key from Keycloak server.
+
 export class KeyCloakUtils {
 
     public static readonly PERMISSIONS = new KeyCloakPermissions([
-        // ["/customers", "post", "res:customer", "scopes:create"],
-        // ["/customers(*)", "get", "res:customer", "scopes:view"],
-        // ["/campaigns", "post", "res:campaign", "scopes:create"],
-        // ["/campaigns(*)", "get", "res:campaign", "scopes:view"],
-        // ["/reports", "post", "res:report", "scopes:create"],
-        // ["/reports(*)", "get", "res:report", "scopes:view"]
     ]).notProtect(
         "/swagger(*)",
         "/docs(*)",
         "/api-docs"
     );
 
-    public static init(app: express.Express): void {
+    public static init(app: core.Express): void {
         this.readSecuritySchemes();
         const keyCloakPath = path.join(__dirname, "../../../src/assets/keycloak.json");
         if (fs.existsSync(keyCloakPath)) {
             LoggerUtility.info("Configuration auth server...");
-            const keyCloakConfig = jsyaml.safeLoad(fs.readFileSync(keyCloakPath, "utf8"));
+            this.keyCloakConfig = jsyaml.safeLoad(fs.readFileSync(keyCloakPath, "utf8"));
             if (process.env.KEYCLOAK_URL) {
-                keyCloakConfig.serverUrl = process.env.KEYCLOAK_URL;
-                LoggerUtility.info(`Setting server url ${keyCloakConfig.serverUrl}`);
+                this.keyCloakConfig["auth-server-url"] = process.env.KEYCLOAK_URL;
+                LoggerUtility.info(`Setting server url ${this.keyCloakConfig["auth-server-url"]}`);
+            } else if (process.env.NODE_ENV !== "development") {
+                LoggerUtility.warn(`NOT FOUND KEYCLOAK_URL variable, using default value ${this.keyCloakConfig["auth-server-url"]}`);
+                process.exit(1);
             }
             if (process.env.KEYCLOAK_PUBLIC_KEY) {
                 LoggerUtility.info(`Adding public key...`);
-                keyCloakConfig.realmPublicKey = process.env.KEYCLOAK_PUBLIC_KEY;
+                this.keyCloakConfig["realm-public-key"] = process.env.KEYCLOAK_PUBLIC_KEY;
             } else {
                 LoggerUtility.error("NOT FOUND KEYCLOAK_PUBLIC_KEY variable");
                 process.exit(1);
             }
-            const memoryStore = new session.MemoryStore();
+            if (process.env.KEYCLOAK_CLIENT_SECRET) {
+                LoggerUtility.info(`Adding client secret...`);
+                this.keyCloakConfig.credentials = {};
+                this.keyCloakConfig.credentials.secret = process.env.KEYCLOAK_CLIENT_SECRET;
+            } else {
+                LoggerUtility.error("NOT FOUND KEYCLOAK_CLIENT_SECRET variable");
+                process.exit(1);
+            }
+            this.memoryStore = new session.MemoryStore();
             app.use(session({
                 resave: false,
                 saveUninitialized: true,
                 secret: process.env.KEYCLOAK_PUBLIC_KEY,
-                store: memoryStore
+                store: this.memoryStore
             }));
-            this.keycloak = new KeyCloak({ store: memoryStore}, keyCloakConfig);
-            this.keycloakProtect = this.keycloak.protect();
+            this.keycloak = new Keycloak({ store: this.memoryStore }, this.keyCloakConfig);
             this.entitlementUrl = this.createEntitlementUrl();
+            this.keycloak.redirectToLogin = () => false;
+            this.keycloak.accessDenied = (req, res) => {
+                ResponsePayload.response401(res);
+                LoggerUtility.error(`Not authenticated access for: ${req.method} ${req.originalUrl}`);
+            };
             const handler = this.keycloak.middleware();
             app.use(handler);
             app.use(this.createSecurityMiddleware());
-            app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-                if (this.PERMISSIONS.isNotProtectedUrl(req)) {
-                    return next();
-                }
-                const permission = this.PERMISSIONS.findPermission(req);
-                if (!permission) {
-                    LoggerUtility.warn(`Can not find a permission for: ${req.method} ${req.originalUrl}`);
-                    return this.keycloak.accessDenied(req, res);
-                }
-                this.protectAndCheckPermission(req, res, next, permission);
-            });
+            this.keycloakProtect = this.keycloak.protect();
         } else {
             LoggerUtility.warn("Cannot find keycloak configuration file.");
         }
     }
 
-    public static createSecurityMiddleware(): express.RequestHandler {
-        return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    public static createSecurityMiddleware(): RequestHandler {
+        return (req: Request, res: Response, next: NextFunction) => {
             if (this.PERMISSIONS.isNotProtectedUrl(req)) {
                 return next();
             }
@@ -83,28 +84,18 @@ export class KeyCloakUtils {
                 LoggerUtility.warn(`Can not find a permission for: ${req.method} ${req.originalUrl}`);
                 return ResponsePayload.response401(res);
             }
+            LoggerUtility.debug(`Found permissions: ${req.originalUrl}, ${permission.method}, ${permission.scope}`);
             this.protectAndCheckPermission(req, res, next, permission);
         };
     }
 
     private static keycloak: Keycloak;
-    private static keycloakProtect: express.RequestHandler;
+    private static keycloakProtect: RequestHandler;
     private static entitlementUrl: string;
+    private static memoryStore: session.MemoryStore;
+    private static keyCloakConfig: any;
 
     private static readSecuritySchemes() {
-        // const securitySchemes: object = SwaggerUtils.getSwaggerDoc().components.securitySchemes;
-        // for (const key in securitySchemes) {
-        //     if (key) {
-        //         const schema = securitySchemes[key];
-        //         if (typeof schema === "object" && schema.type === "oauth2") {
-        //             for (const keyPermission in schema.flows.implicit.scopes) {
-        //                 if (keyPermission) {
-        //                     console.log(keyPermission);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         const paths: object = SwaggerUtils.getSwaggerDoc().paths;
         for (const customPath in paths) {
             if (customPath) {
@@ -116,10 +107,14 @@ export class KeyCloakUtils {
                             if (paths[customPath][req].security[sec]) {
                                 for (const scope in securitySchemas[sec]) {
                                     if (securitySchemas[sec][scope] && securitySchemas[sec][scope].length > 0) {
-                                        console.log(customPath, req, securitySchemas[sec][scope]);
                                         this.PERMISSIONS.addPermission(
-                                            { method: req, resource: "", scope: securitySchemas[sec][scope]
-                                                , url: new UrlPattern(customPath + "(*)")});
+                                            { method: req.toUpperCase()
+                                            , resource: "", scope: securitySchemas[sec][scope]
+                                            , url: new UrlPattern(customPath + "(*)")});
+                                        this.PERMISSIONS.addPermission(
+                                            { method: req.toUpperCase()
+                                            , resource: "", scope: securitySchemas[sec][scope]
+                                            , url: new UrlPattern(customPath, { })});
                                     }
                                 }
                             }
@@ -130,29 +125,34 @@ export class KeyCloakUtils {
         }
     }
 
-    private static protectAndCheckPermission(req: express.Request, response: express.Response
-                                        ,    next: express.NextFunction, permission: Permissions) {
-        this.keycloakProtect(req, response, () => this.checkPermission(req, permission)
-            .then(() => next()).catch((error) => {
-                LoggerUtility.error(`access denied: ${error.message}`);
-                this.keycloak.accessDenied(req, response);
-            }));
+    private static protectAndCheckPermission(req: Request, res: Response, next: NextFunction, permission: Permissions) {
+        this.keycloakProtect(req, res, () => {
+            // TODO: verify scopes of token.
+            // this.checkPermission(req, permission)
+            // .then(() => {
+                LoggerUtility.debug("Access success");
+                next();
+            // }).catch((error) => {
+            //     LoggerUtility.error(`access denied: ${error}`);
+            //     this.keycloak.accessDenied(req, res);
+            // });
+        });
     }
 
-    private static checkPermission(req: express.Request, permission: Permissions) {
-        const scopes = [permission.scope];
+    private static checkPermission(req: Request, permission: Permissions) {
+        const scopes = [ permission.scope ];
+        LoggerUtility.debug(`Required scopes: , ${scopes}`);
         return this.getAccessToken(req)
             .then((accessToken) =>
             this.checkEntitlementRequest(permission.resource, scopes, accessToken));
     }
 
-    private static getAccessToken(req: express.Request) {
-        const tokens = this.keycloak.stores[1].get(req);
-        const result = tokens && tokens.access_token;
-        return result ? Promise.resolve(result) : Promise.reject("There is not token.");
+    private static getAccessToken(req: Request) {
+        const tokens = req.headers.authorization;
+        return tokens ? Promise.resolve(tokens) : Promise.reject("There is not token.");
     }
 
-    private static checkEntitlementRequest(resource, scopes, accessToken) {
+    private static checkEntitlementRequest(resource: string, scopes: Array<string> | string, accessToken) {
         const permission = {
             resource_set_name: resource,
             scopes
@@ -172,11 +172,10 @@ export class KeyCloakUtils {
             method: "POST",
             url: this.entitlementUrl
         };
-
         return request(options);
     }
 
     private static createEntitlementUrl() {
-        return `${this.keycloak.config.realmUrl}/authz/entitlement/${this.keycloak.config.clientId}`;
+        return `${this.keyCloakConfig["auth-server-url"]}/authz/entitlement/${this.keyCloakConfig.resource}`;
     }
 }

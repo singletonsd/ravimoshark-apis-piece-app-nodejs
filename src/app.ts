@@ -26,9 +26,9 @@ app.use(cors());
 app.use(helmet.xssFilter());
 app.use(helmet.frameguard());
 
-TypeOrmUtils.init()
-.then(async () => {
-    KeyCloakUtils.init(app);
+KeyCloakUtils.init(app).then(() => {
+    TypeOrmUtils.init();
+}).then(() => {
     SwaggerUtils.init(app);
 })
 .catch((error) => {

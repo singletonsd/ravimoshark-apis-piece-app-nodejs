@@ -74,8 +74,8 @@ In order to secure this API, it must be connected with a KeyClock Server. To do 
 
 ```bash
 # KEYCLOAK CONFIGURATION
-KEYCLOAK_PUBLIC_KEY=
 KEYCLOAK_URL=
+KEYCLOAK_PUBLIC_KEY= #Optional. Default Value: It will be reached from server.
 KEYCLOAK_REALM= #Optional. Default Value: SAV.
 KEYCLOAK_RESOURCE= #Optional. Default Value: service-piece.
 ```
@@ -151,7 +151,7 @@ npm run docker-generate #once download was executed.
 - [X] Connect Database with an ORM.
 - [X] Add lint rules.
 - [X] Config TS.
-- [ ] Config Keyclock to authenticate.
+- [X] Config Keyclock to authenticate.
 
 ----------------------
 © [Singleton SD](http://singletonsd.com), France, 2019.

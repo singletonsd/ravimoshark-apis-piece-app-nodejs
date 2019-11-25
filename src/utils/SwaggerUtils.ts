@@ -26,7 +26,7 @@ export class SwaggerUtils {
         app.use("/swagger", swaggerUi.serve, swaggerUi.setup(this.getSwaggerDoc()));
         swaggerTools.configure(options);
         swaggerTools.initialize(this.swaggerDoc, app, () => {
-            LoggerUtility.debug("Swagger OAS middleware initialized.");
+            LoggerUtility.debug("Swagger OAS: middleware initialized.");
         });
     }
 
@@ -45,11 +45,11 @@ export class SwaggerUtils {
         this.swaggerDoc = jsyaml.safeLoad(spec);
         const servers: Array<{ url: string}> = this.swaggerDoc.servers;
         if (process.env.SWAGGER_URL) {
-            LoggerUtility.info("Found environment URL", process.env.SWAGGER_URL);
+            LoggerUtility.info("Swagger OAS: Found environment URL", process.env.SWAGGER_URL);
             servers.unshift({ url: process.env.SWAGGER_URL });
         }
         if (process.env.APP_PORT) {
-            LoggerUtility.info("Found APP_PORT env", process.env.APP_PORT);
+            LoggerUtility.info("Swagger OAS: Found APP_PORT env", process.env.APP_PORT);
             servers.unshift({ url: `http://localhost:${process.env.APP_PORT}` });
         }
     }

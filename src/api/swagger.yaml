@@ -78,9 +78,10 @@ paths:
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Categories
       security:
+        - api_key: []
+        - bearer_auth: []
         - main_auth:
             - 'read:category'
-        - api_key: []
   /pieces:
     get:
       tags:
@@ -128,6 +129,11 @@ paths:
         '405':
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Pieces
+      security:
+        - api_key: []
+        - bearer_auth: []
+        - main_auth:
+            - 'read:piece'
   '/pieces/{refArticle}':
     get:
       tags:
@@ -154,6 +160,11 @@ paths:
         '405':
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Pieces
+      security:
+        - api_key: []
+        - bearer_auth: []
+        - main_auth:
+            - 'read:piece'
   /products:
     get:
       tags:
@@ -201,6 +212,11 @@ paths:
         '405':
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Products
+      security:
+        - api_key: []
+        - bearer_auth: []
+        - main_auth:
+            - 'read:product'
   '/products/{refArticle}':
     get:
       tags:
@@ -227,6 +243,11 @@ paths:
         '405':
           $ref: '#/components/responses/405'
       x-swagger-router-controller: Products
+      security:
+        - api_key: []
+        - bearer_auth: []
+        - main_auth:
+            - 'read:product'
 components:
   schemas:
     Categories:
@@ -577,9 +598,9 @@ components:
       type: apiKey
       in: header
       name: api_key
-    basic_auth:
+    bearer_auth:
       type: http
-      scheme: basic
+      scheme: bearer
     main_auth:
       type: oauth2
       flows:

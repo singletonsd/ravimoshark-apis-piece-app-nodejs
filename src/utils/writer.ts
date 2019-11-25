@@ -20,7 +20,7 @@ export class ResponsePayload {
     }
 
     public static response401(response: CustomResponse): void {
-        ResponsePayload.response(response, VALID_RESPONSES.ERROR.AUTH.TOKEN.APP, 401);
+        ResponsePayload.response(response, VALID_RESPONSES.ERROR.AUTH.TOKEN.USER, 401);
     }
 
     public static response400(response: CustomResponse, payload: string): void {

@@ -56,14 +56,12 @@ export class KeyCloakUtils {
                 this.keyCloakConfig.realm = process.env.KEYCLOAK_REALM;
             } else {
                 LoggerUtility.warn(`USING DEFAULT KEYCLOAK REALM NAME: ${this.keyCloakConfig.realm}`);
-                process.exit(1);
             }
             if (process.env.KEYCLOAK_RESOURCE) {
                 LoggerUtility.info(`Adding resource... ${process.env.KEYCLOAK_RESOURCE}`);
                 this.keyCloakConfig.resource = process.env.KEYCLOAK_RESOURCE;
             } else {
                 LoggerUtility.warn(`USING DEFAULT KEYCLOAK RESOURCE NAME: ${this.keyCloakConfig.resource}`);
-                process.exit(1);
             }
             this.memoryStore = new session.MemoryStore();
             app.use(session({
